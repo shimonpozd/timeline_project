@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Еврейская история — Таймлайн</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+    .timeline-container {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap; /* чтобы переносились при узком экране */
+    }
+    .period-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      cursor: pointer;
+      width: 100px;
+      text-align: center;
+    }
+    .sage-list {
+      margin: 10px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .sage-item {
+      cursor: pointer;
+      margin: 5px 0;
+      background-color: #f9f9f9;
+      padding: 5px;
+      border: 1px solid #ddd;
+    }
+    .bio-container {
+      margin-top: 20px;
+      border: 1px solid #eee;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Еврейская история — интерактивная шкала</h1>
+  <div class="timeline-container" id="timeline"></div>
+
+  <h2>Мудрецы</h2>
+  <ul class="sage-list" id="sageList"></ul>
+
+  <div class="bio-container" id="bioContainer">
+    <h3>Биография</h3>
+    <div id="bioContent">Выберите мудреца, чтобы увидеть подробности</div>
+  </div>
+
+  <!-- Подключение скрипта -->
+  <script src="script.js"></script>
+</body>
+</html>
