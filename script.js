@@ -1,9 +1,10 @@
 // script.js
 
-// Попробуем отрисовать сетку, где:
-// - Ось Y: периоды (Zugot, Tanaim...).
-// - Ось X: поколения.
-// В каждой "ячейке" (period, generation) будут имена мудрецов, располагающиеся вертикально.
+// Идея:
+// 1) На оси Y – периоды (с Zугот вверху и т.д.).
+// 2) На оси X – группы ("пары" для Zугот, "поколения" для других периодов).
+// 3) В каждой ячейке – список мудрецов. Если их много, динамически уменьшаем интерлиньяж.
+// 4) Пытаемся сделать подписи более читаемыми.
 
 const width = 1200;
 const height = 900;
@@ -20,11 +21,10 @@ const baseColors = {
   savoraim: "#ffffcc"
 };
 
-// Немного осветлим/затемним
+// Немного осветлим цвет
 function tintColor(base, factor = 1) {
   const c = d3.color(base);
   if (!c) return "#ccc";
-  // Простой вариант — делаем цвет светлее
   return c.brighter(factor).formatRgb();
 }
 
@@ -34,9 +34,7 @@ fetch("data.json")
     const periods = data.periods;
     const sages = data.sages;
 
-    // Сгруппируем мудрецов по (periodId, groupId)
-    // D3 v7: const grouped = d3.group(sages, s => s.periodId, s => s.groupId);
-    // Или вручную:
+    // Группируем мудрецов: (periodId, groupId)
     const grouped = {};
     sages.forEach(s => {
       const keyP = s.periodId;
@@ -46,30 +44,22 @@ fetch("data.json")
       grouped[keyP][keyG].push(s);
     });
 
-    // Определим уникальные периоды и поколения
-    const periodKeys = Array.from(
-      new Set(sages.map(d => d.periodId))
-    );
-
-    // Чтобы сохранить порядок, посмотрим, есть ли упорядоченный массив "periods"
-    // у нас есть periods[].id. Сделаем сортировку periodKeys по порядку, если нужно
-    // Сейчас просто оставим как есть.
-    // Но лучше:
+    // Периоды в правильном порядке (по массиву periods)
     const periodOrder = periods.map(p => p.id);
+    // Уникальные periodId, отсортированные
+    const periodKeys = Array.from(new Set(sages.map(d => d.periodId)));
     periodKeys.sort((a, b) => periodOrder.indexOf(a) - periodOrder.indexOf(b));
 
-    // Поколения
-    const generationKeys = Array.from(
-      new Set(sages.map(d => d.groupId))
-    ).sort(); // сортируем строково
+    // Уникальные groupId, сортируем строково
+    const generationKeys = Array.from(new Set(sages.map(d => d.groupId))).sort();
 
-    // Шкала X - поколения
+    // Шкала X – для groupId ("поколения" или "пары")
     const xScale = d3.scaleBand()
       .domain(generationKeys)
       .range([margin.left, width - margin.right])
       .padding(0.2);
 
-    // Шкала Y - периоды
+    // Шкала Y – для periodId
     const yScale = d3.scaleBand()
       .domain(periodKeys)
       .range([margin.top, height - margin.bottom])
@@ -80,8 +70,7 @@ fetch("data.json")
       .attr("width", width)
       .attr("height", height);
 
-    // Создадим ячейки для каждой (period, generation)
-    // Сформируем массив комбинаций
+    // Массив ячеек (period, generation)
     const cellsData = [];
     periodKeys.forEach(p => {
       generationKeys.forEach(g => {
@@ -89,7 +78,7 @@ fetch("data.json")
       });
     });
 
-    // Прямоугольники для каждой ячейки
+    // Прямоугольники – ячейки
     svg.selectAll(".cell")
       .data(cellsData)
       .enter()
@@ -100,53 +89,58 @@ fetch("data.json")
       .attr("width", xScale.bandwidth())
       .attr("height", yScale.bandwidth())
       .attr("fill", d => {
-        // базовый цвет = baseColors[period]
-        // для оттенка используем factor = порядковый номер поколения (?
         const base = baseColors[d.period] || "#ccc";
-        const idx = generationKeys.indexOf(d.generation); // 0,1,2...
-        return tintColor(base, 0.5 + idx * 0.08); // легкий градиент
+        const idx = generationKeys.indexOf(d.generation);
+        // небольшой градиент по поколениям
+        return tintColor(base, 0.5 + idx * 0.08);
       })
       .attr("stroke", "#fff")
       .attr("stroke-width", 1)
       .attr("opacity", 0.8);
 
-    // Подписываем название поколения в центре каждой ячейки
+    // Подпишем ("поколение" или "пара") вверху ячейки
     svg.selectAll(".cell-label-generation")
       .data(cellsData)
       .enter()
       .append("text")
       .attr("class", "cell-label-generation")
       .attr("x", d => xScale(d.generation) + xScale.bandwidth() / 2)
-      .attr("y", d => yScale(d.period) + 15)
+      .attr("y", d => yScale(d.period) + 12)
       .attr("text-anchor", "middle")
       .attr("font-size", 10)
       .attr("fill", "#333")
       .text(d => d.generation);
 
-    // Добавим имена мудрецов в каждой ячейке, вертикально друг под другом
-    // Для этого нужна вложенная выборка.
-
-    // Группа "cell" для удобства
+    // Создаём <g> для каждой ячейки, чтобы разместить имена
     const cellGroup = svg.selectAll(".cellGroup")
       .data(cellsData)
       .enter()
       .append("g")
       .attr("class", "cellGroup")
-      .attr("transform", d => `translate(${xScale(d.generation)},${yScale(d.period)})`);
+      .attr("transform", d => `translate(${xScale(d.generation)}, ${yScale(d.period)})`);
 
     cellGroup.each(function(d) {
       const cell = d3.select(this);
       const arr = grouped[d.period]?.[d.generation] || [];
 
-      // Каждому мудрецу в ячейке даем отдельный <text>
-      // Располагаем их вертикально друг под другом
-      // lineHeight = 14px
+      // Высота ячейки
+      const cellH = yScale.bandwidth();
+      // Оставим небольшой верхний отступ (25px)
+      const topPad = 25;
+      // Рассчитаем, какое расстояние между строками, чтобы влезли все
+      let lineHeight = 14;
+      if (arr.length > 0) {
+        const totalAvailable = cellH - topPad - 5; // 5 - запас
+        // Среднее расстояние, но не меньше 10
+        lineHeight = Math.max(10, totalAvailable / arr.length);
+      }
+
       arr.forEach((sage, i) => {
         cell.append("text")
           .attr("x", xScale.bandwidth() / 2)
-          .attr("y", 30 + i * 14) // 30 - отступ сверху, i*14 - шаг
+          .attr("y", topPad + (i + 1) * lineHeight)
           .attr("text-anchor", "middle")
-          .attr("font-size", 10)
+          .attr("font-size", 11)
           .attr("fill", "#000")
           .text(sage.name);
       });
@@ -168,13 +162,13 @@ fetch("data.json")
         return p ? p.name : d;
       });
 
-    // Добавим заголовок
+    // Заголовок сверху
     svg.append("text")
       .attr("x", width / 2)
       .attr("y", 30)
       .attr("text-anchor", "middle")
       .attr("font-weight", "bold")
       .attr("font-size", 20)
-      .text("Еврейская история: Поколения (X) и Периоды (Y)");
+      .text("Еврейская история: Поколения / Пары (X) и Периоды (Y)");
   })
   .catch(err => console.error(err));
