@@ -1,8 +1,5 @@
 // script.js
 // Настройка размеров
-console.log("script.js загружен!");
-const chart = d3.select("#chart");
-console.log("Выбрали #chart:", chart.node());
 
 // Пробуем добавить тестовый SVG
 chart.append("svg")
