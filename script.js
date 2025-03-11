@@ -2,12 +2,7 @@
 // Настройка размеров
 
 // Пробуем добавить тестовый SVG
-chart.append("svg")
-  .attr("width", 400)
-  .attr("height", 200)
-  .style("background", "lightgray");
 
-console.log("SVG добавлен!");
 const width = 1200;
 const height = 400;
 const margin = { top: 30, right: 30, bottom: 50, left: 30 };
