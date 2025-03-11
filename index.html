@@ -2,37 +2,39 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>D3 Timeline</title>
+  <title>Еврейская история — интерактивная шкала</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script> <!-- Подключаем D3.js -->
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    /* Контейнер для подсказки (tooltip) */
+    #chart {
+      margin-top: 20px;
+    }
     .tooltip {
       position: absolute;
-      background-color: #fff;
+      background-color: white;
       border: 1px solid #999;
-      padding: 8px;
-      pointer-events: none; /* чтобы мышь могла взаимодействовать с элементами под подсказкой */
-      opacity: 0;          /* по умолчанию скрыто */
+      padding: 5px;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.2s;
     }
   </style>
 </head>
 <body>
 
-<h1>Еврейская история — D3 Timeline</h1>
+<h1>Еврейская история — интерактивная шкала</h1>
 
-<!-- Контейнер, в котором будет наш SVG -->
+<!-- Контейнер для шкалы -->
 <div id="chart"></div>
 
-<!-- Tooltip -->
+<!-- Контейнер для подсказки (tooltip) -->
 <div class="tooltip" id="tooltip"></div>
 
-<!-- Подключаем D3 (лучше через локальный файл или CDN) -->
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<!-- Наш код -->
+<!-- Подключаем наш скрипт -->
 <script src="script.js"></script>
+
 </body>
 </html>
