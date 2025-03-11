@@ -110,7 +110,7 @@ fetch("data.json")
     { "name": "Раби Ошаия Раба", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
     { "name": "Хизкия", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
     { "name": "Раби Эфес", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
-    { "name": "Раби Йеошуа бен Леви (Риб"Л)", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
+    { "name": "Раби Йеошуа бен Леви (РибЛ)", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
     { "name": "Раби Ханина", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
     { "name": "Раби Йонатан", "year": 220, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 1" },
     { "name": "Раби Йоханан бар Напаха", "year": 250, "periodId": "amoraim_eretz_israel", "groupId": "Поколение 2" },
