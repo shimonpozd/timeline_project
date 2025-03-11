@@ -1,82 +1,122 @@
-// Определяем размеры шкалы
-const width = 800;
-const height = 200;
-const margin = { top: 20, right: 20, bottom: 50, left: 40 };
+// script.js
+// Настройка размеров
+const width = 1200;
+const height = 400;
+const margin = { top: 30, right: 30, bottom: 50, left: 30 };
 
-// Контейнер tooltip
-const tooltip = d3.select("#tooltip");
+// Цвета для периодов
+const periodColors = {
+  zugot: "#b3cde0",
+  tanaim_temple: "#ccebc5",
+  tanaim_post_temple: "#fddaec",
+  amoraim_eretz_israel: "#decbe4",
+  amoraim_bavel: "#fed9a6",
+  savoraim: "#ffffcc"
+};
 
-// Функция загрузки данных и построения шкалы
-async function drawTimeline() {
-  // Загружаем JSON с данными
+// Функция инициализации
+async function init() {
+  // Загружаем данные
   const data = await d3.json("data.json");
+
+  // У нас в data содержатся:
+  // data.periods => массив периодов
+  // data.sages => массив мудрецов
 
   const periods = data.periods;
   const sages = data.sages;
 
-  // Определяем диапазон лет (минимальный и максимальный год)
-  const minYear = d3.min(periods, d => d.start);
-  const maxYear = d3.max(periods, d => d.end);
+  // Определяем min и max год
+  // Для перестраховки возьмём min от ~-350, max до ~650
+  const minYear = d3.min([
+    d3.min(periods, d => d.start),
+    d3.min(sages, s => s.year),
+    -350
+  ]);
+  const maxYear = d3.max([
+    d3.max(periods, d => d.end),
+    d3.max(sages, s => s.year),
+    650
+  ]);
 
-  // Создаём шкалу X (годы -> пиксели)
+  // Создаём шкалу X (год -> пиксели)
   const xScale = d3.scaleLinear()
     .domain([minYear, maxYear])
     .range([margin.left, width - margin.right]);
 
-  // Создаём SVG контейнер
+  // Создаём основной SVG
   const svg = d3.select("#chart")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
 
-  // Добавляем ось X (года)
+  // === 1) Рисуем ось X ===
   svg.append("g")
     .attr("transform", `translate(0, ${height - margin.bottom})`)
-    .call(d3.axisBottom(xScale).ticks(10).tickFormat(d3.format("d")));
+    .call(d3.axisBottom(xScale).ticks(20).tickFormat(d3.format("d")));
 
-  // Отображаем периоды (прямоугольники)
-  svg.selectAll(".period")
+  // === 2) Рисуем цветные прямоугольники для каждого периода ===
+  //    Будут растягиваться на всю высоту, кроме небольших отступов.
+  //    На одном уровне, чтобы показать «фон» для каждого отрезка времени.
+  //    Можно использовать периодId -> periodColors[periodId].
+  svg.selectAll(".period-rect")
     .data(periods)
     .enter()
     .append("rect")
-    .attr("class", "period")
+    .attr("class", "period-rect")
     .attr("x", d => xScale(d.start))
-    .attr("y", height / 2 - 20)
+    .attr("y", margin.top)
     .attr("width", d => xScale(d.end) - xScale(d.start))
-    .attr("height", 30)
-    .attr("fill", "#b3cde0")
-    .on("mouseover", (event, d) => showTooltip(event, `${d.name}: ${d.start} — ${d.end}`))
-    .on("mousemove", moveTooltip)
-    .on("mouseout", hideTooltip);
+    .attr("height", height - margin.bottom - margin.top)
+    .attr("fill", d => periodColors[d.id] || "#ccc")
+    .attr("opacity", 0.4); // чуть прозрачнее
 
-  // Отображаем мудрецов (точки)
-  svg.selectAll(".sage")
+  // === 3) Подпись названий периодов, примерно по центру периода ===
+  svg.selectAll(".period-label")
+    .data(periods)
+    .enter()
+    .append("text")
+    .attr("class", "period-label")
+    .attr("x", d => (xScale(d.start) + xScale(d.end)) / 2)
+    .attr("y", margin.top + 20)
+    .attr("text-anchor", "middle")
+    .attr("font-weight", "bold")
+    .text(d => d.name);
+
+  // === 4) Рисуем мудрецов (точки) ===
+  //    Все на одной горизонтали (например, posY).
+  //    Или, если очень много, можно добавить «случайный разброс» или
+  //    «смещение» в зависимости от периода.
+  //    Здесь для простоты — одна общая горизонтальная линия.
+  const posY = (height - margin.bottom) / 2 + 30;
+
+  svg.selectAll(".sage-circle")
     .data(sages)
     .enter()
     .append("circle")
-    .attr("class", "sage")
+    .attr("class", "sage-circle")
     .attr("cx", d => xScale(d.year))
-    .attr("cy", height / 2 - 5)
-    .attr("r", 6)
-    .attr("fill", "#fbb4ae")
-    .on("mouseover", (event, d) => showTooltip(event, `<strong>${d.name}</strong><br>${d.bio}`))
-    .on("mousemove", moveTooltip)
-    .on("mouseout", hideTooltip);
+    .attr("cy", posY)
+    .attr("r", 5)
+    .attr("fill", d => periodColors[d.periodId] || "gray")
+    .attr("stroke", "#333")
+    .attr("stroke-width", 1);
+
+  // === 5) Подписи к точкам (имя мудреца) ===
+  //    Ставим чуть выше/ниже точки (чтобы текст не залезал на окружность).
+  svg.selectAll(".sage-label")
+    .data(sages)
+    .enter()
+    .append("text")
+    .attr("class", "sage-label")
+    .attr("x", d => xScale(d.year))
+    .attr("y", posY - 10) // на 10px выше точки
+    .attr("text-anchor", "middle")
+    .attr("font-size", "10px")
+    .text(d => d.name);
+
+  // Готово! Все имена и точки отображаются на одной шкале.
 }
 
-// Функции для tooltip (всплывающих подсказок)
-function showTooltip(event, text) {
-  tooltip.style("opacity", 1).html(text);
-  moveTooltip(event);
-}
-
-function moveTooltip(event) {
-  tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY + 10) + "px");
-}
-
-function hideTooltip() {
-  tooltip.style("opacity", 0);
-}
-
-// Запускаем
-drawTimeline();
+// Запуск
+init();
