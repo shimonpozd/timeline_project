@@ -2,59 +2,37 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Еврейская история — Таймлайн</title>
+  <title>D3 Timeline</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      padding: 0;
     }
-    .timeline-container {
-      display: flex;
-      flex-direction: row;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap; /* чтобы переносились при узком экране */
-    }
-    .period-box {
-      border: 1px solid #ccc;
-      padding: 10px;
-      cursor: pointer;
-      width: 100px;
-      text-align: center;
-    }
-    .sage-list {
-      margin: 10px 0;
-      padding: 0;
-      list-style: none;
-    }
-    .sage-item {
-      cursor: pointer;
-      margin: 5px 0;
-      background-color: #f9f9f9;
-      padding: 5px;
-      border: 1px solid #ddd;
-    }
-    .bio-container {
-      margin-top: 20px;
-      border: 1px solid #eee;
-      padding: 10px;
+    /* Контейнер для подсказки (tooltip) */
+    .tooltip {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #999;
+      padding: 8px;
+      pointer-events: none; /* чтобы мышь могла взаимодействовать с элементами под подсказкой */
+      opacity: 0;          /* по умолчанию скрыто */
+      transition: opacity 0.2s;
     }
   </style>
 </head>
 <body>
-  <h1>Еврейская история — интерактивная шкала</h1>
-  <div class="timeline-container" id="timeline"></div>
 
-  <h2>Мудрецы</h2>
-  <ul class="sage-list" id="sageList"></ul>
+<h1>Еврейская история — D3 Timeline</h1>
 
-  <div class="bio-container" id="bioContainer">
-    <h3>Биография</h3>
-    <div id="bioContent">Выберите мудреца, чтобы увидеть подробности</div>
-  </div>
+<!-- Контейнер, в котором будет наш SVG -->
+<div id="chart"></div>
 
-  <!-- Подключение скрипта -->
-  <script src="script.js"></script>
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Подключаем D3 (лучше через локальный файл или CDN) -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- Наш код -->
+<script src="script.js"></script>
 </body>
 </html>
