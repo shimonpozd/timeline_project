@@ -1,10 +1,7 @@
 // script.js
 
-// Идея:
-// 1) На оси Y – периоды (с Zугот вверху и т.д.).
-// 2) На оси X – группы ("пары" для Zугот, "поколения" для других периодов).
-// 3) В каждой ячейке – список мудрецов. Если их много, динамически уменьшаем интерлиньяж.
-// 4) Пытаемся сделать подписи более читаемыми.
+// Здесь мы разделяем логику для Зугот ("Пара") и остальных периодов ("Поколение").
+// Если в данных у Tanaim/Amoraim есть "Пара 3" в groupId, мы можем динамически переименовать.
 
 const width = 1200;
 const height = 900;
@@ -26,6 +23,19 @@ function tintColor(base, factor = 1) {
   const c = d3.color(base);
   if (!c) return "#ccc";
   return c.brighter(factor).formatRgb();
+}
+
+// Функция, которая решает, как подписывать группу
+// Если period = 'zugot', то пишем "Пара"
+// Иначе "Поколение".
+function labelForCell(periodId, groupId) {
+  if (periodId === "zugot") {
+    // Если groupId уже содержит "Пара", вернём как есть, иначе добавим
+    return groupId.startsWith("Пара") ? groupId : "Пара " + groupId;
+  } else {
+    // Для всех остальных периодов
+    return groupId.startsWith("Поколение") ? groupId : "Поколение " + groupId;
+  }
 }
 
 fetch("data.json")
@@ -109,7 +119,7 @@ fetch("data.json")
       .attr("text-anchor", "middle")
       .attr("font-size", 10)
       .attr("fill", "#333")
-      .text(d => d.generation);
+      .text(d => labelForCell(d.period, d.generation));
 
     // Создаём <g> для каждой ячейки, чтобы разместить имена
     const cellGroup = svg.selectAll(".cellGroup")
